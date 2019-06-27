@@ -199,7 +199,10 @@ def to_fits2(thing,**kwargs):
     print(**kwargs)
     pass
 
-
+def to_fits3(thing,d:dict):
+    '''
+    Takes in a dictionary of data and outputs to fits file based on key names
+    '''
 
 # Separates types of data from a thing into dictionary of arrays 
 
