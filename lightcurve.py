@@ -2,11 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.time import Time
-import lc_tools as check
+from lcTools import lcTools
+import lcTools as check
 import os 
 import traceback
 stripe82_data=np.genfromtxt('/Users/admin/Desktop/astro_research/our_object.csv',delimiter=',',skip_header=1)
-
+csv_data_path = '/Users/admin/Desktop/astro_research/lc_tools/data_files/'
 def flux_to_mag(flux):
     return -2.5*np.log10(flux/3631)
 
@@ -146,6 +147,10 @@ def plot_check(thing_index,things):
 
 # Compares changes in photometry
 def diff_photometry_dr14(things):
+    '''
+    Plotting below corresponds to the 'DR14.csv' file. 
+    '''
+
     dict_things = check.dict_things(things)
     
     thing0 = dict_things['thing0']
@@ -225,11 +230,11 @@ def return_things(self,things):
 def plot_show():
     user_input='y'
     while user_input=='y':
-        table=check.set_table()
+        table = lcTools(csv_data_path)
         try:
-            table=check.deg_to_arcsec(table)
-            things=check.sort_things(table)
-            check.show_things(things)
+            table.deg_to_arcsec()
+            things = table.sort_things()
+            table.show_things(things)
             choice=input('Which thing?: ')
             while choice != '':
                 plot_check(choice, things)
@@ -248,14 +253,14 @@ def plot_show():
 def table_data():
     user_input = 'y'
     while user_input == 'y':
-        table = check.set_table()
+        table = lcTools(csv_data_path)
        
         try:
-            table = check.deg_to_arcsec(table)
-            things = check.sort_things(table)
-            check.show_things(things)
+            table.deg_to_arcsec()
+            things = table.sort_things()
+            table.show_things(things)
             # diff_photometry_dr14(things)
-            return things
+            return things,table
         except Exception as e:
             print(e)
             if type(e) is TypeError and table is None:
@@ -266,5 +271,5 @@ def table_data():
             
             user_input = input('Continue? (y/n): ')
 
-plot_show()
-# things = table_data()
+# plot_show()
+things,table = table_data()
