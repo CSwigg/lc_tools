@@ -271,5 +271,5 @@ def table_data():
             
             user_input = input('Continue? (y/n): ')
 
-# plot_show()
-things,table = table_data()
+plot_show()
+# things,table = table_data()
