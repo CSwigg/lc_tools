@@ -54,18 +54,6 @@ class lcTools:
             [l_grouped.append(x.values) for x in grouped]
             return l_grouped
     
-    def group_things82(self) -> np.ndarray:
-        '''
-        Groups detections from a Stripe82 CasJobs file by grouping detections by accounting 
-        for small variations in astrometry. 
-        '''
-        df = pd.read_csv(self.file_name)
-        gf = df.groupby([np.round(df['ra'],3), np.round(df['dec'],3)])
-        grouped = [gf.get_group(x) for x in gf.groups]
-        l_grouped = []
-        return [l_grouped.append(x.values) for x in grouped]
-
-
     # TODO: Fix formating so that columns are aligned: Use format strings, or pandas(?)
     @staticmethod
     def show_things(things):
