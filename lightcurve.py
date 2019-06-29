@@ -118,11 +118,12 @@ def plot_check(thing_index,things):
     thing=check.unpack_thing(things[int(thing_index)])
     
     ###### SDSS ######
-    print(date_spec)
     plt.plot(date_spec,i_mag,linewidth=0.5,linestyle='--',c='orange')
-    plt.scatter(date_spec,i_mag,s=10,c='orange',label='Our Object: Initial Plot')
+    plt.scatter(date_spec,i_mag,s=10,c='orange',label='Our Object: DR14')
     plt.errorbar(date_spec,i_mag,i_err,fmt='none',c='orange',linewidth=0.5,capsize=1,ecolor='orange')
 
+    ra_t = thing[:,0]
+    dec_t = thing[:,1]
     mjd_t=thing[:,2]
     u_t=thing[:,3]
     g_t=thing[:,4]
@@ -134,11 +135,9 @@ def plot_check(thing_index,things):
     t2=Time(mjd_t,format='mjd')
     d_t=t2.decimalyear
     d_t,i_t,err_i_t=zip(*sorted(zip(d_t,i_t,err_i_t)))
-    plt.scatter(d_t,i_t,s=10,label='Our Object: My DR14 Query')
+    plt.scatter(d_t,i_t,s=10,label='Other Object at ra={}, dec={}'.format(np.round(ra_t[0],3),np.round(dec_t[0],3)))
     # plt.plot(d_t,i_t1,linewidth=0.5,linestyle='--')
     plt.errorbar(d_t,i_t,err_i_t,fmt='none',linewidth=0.5,capsize=2,c='b')
-    print(err_i_t)
-
     ###### SDSS ######
    
     plt.legend()
@@ -233,7 +232,7 @@ def plot_show():
         table = lcTools(csv_data_path)
         try:
             table.deg_to_arcsec()
-            things = table.sort_things()
+            things = table.group_things()
             table.show_things(things)
             choice=input('Which thing?: ')
             while choice != '':
@@ -257,7 +256,7 @@ def table_data():
        
         try:
             table.deg_to_arcsec()
-            things = table.sort_things()
+            things = table.group_things()
             table.show_things(things)
             # diff_photometry_dr14(things)
             return things,table

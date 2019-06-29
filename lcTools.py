@@ -12,11 +12,10 @@ and assist with quick light curve plots.
 
 class lcTools:
     
-    def __init__(self,file_path):
-        self.file_path=file_path
+    def __init__(self, file_path):
+        self.file_path = file_path
         self.table=[]
         self.file_name = self.file_path + input("Please enter the file name of the table you'd like to use (or type 'stop'): ")
-       
         while (not os.path.exists(self.file_name)):
             if self.file_name == 'stop':
                 print('\nWARNING: Table was not initialized.\n')
@@ -32,18 +31,40 @@ class lcTools:
     def deg_to_arcsec(self):
         self.table[:,0:2]=self.table[:,0:2]*3600
     
-    def sort_things(self) -> np.ndarray:
+    def group_things(self) -> np.ndarray:
         '''
-        Sorts detections by thingID. Only works for SDSS CasJobs queries where database >= DR14.
-        Must have a thingID as a column in .csv file. 
+        Groups detections by thingID or by astrometry variations (if .csv file is from 
+        database < DR14)
+        '''
+        # For databases >= DR14
+        try:
+            df = pd.read_csv(self.file_name)
+            gf = df.groupby('thingID')
+            grouped = [gf.get_group(x) for x in gf.groups]
+            l_grouped = []
+            [l_grouped.append(x.values) for x in grouped]
+            return l_grouped
+        # Sorting for stripe82 and databases < DR14
+        except KeyError:
+            print('\nSorting by astrometry variations:\n')
+            df = pd.read_csv(self.file_name)
+            gf = df.groupby([np.round(df['ra'],3), np.round(df['dec'],3)])
+            grouped = [gf.get_group(x) for x in gf.groups]
+            l_grouped = []
+            [l_grouped.append(x.values) for x in grouped]
+            return l_grouped
+    
+    def group_things82(self) -> np.ndarray:
+        '''
+        Groups detections from a Stripe82 CasJobs file by grouping detections by accounting 
+        for small variations in astrometry. 
         '''
         df = pd.read_csv(self.file_name)
-        gf = df.groupby('thingID')
-        grouped =  [gf.get_group(x) for x in gf.groups]
+        gf = df.groupby([np.round(df['ra'],3), np.round(df['dec'],3)])
+        grouped = [gf.get_group(x) for x in gf.groups]
         l_grouped = []
-        [l_grouped.append(x.values) for x in grouped]
+        return [l_grouped.append(x.values) for x in grouped]
 
-        return l_grouped
 
     # TODO: Fix formating so that columns are aligned: Use format strings, or pandas(?)
     @staticmethod
@@ -121,7 +142,7 @@ def to_fits2(d:dict, name:str):
 ####### Unused functions ############
 
 # sort for stripe82
-# TERRIBLE FUNCTION
+# TERRIBLE FUNCTION ----> O(N^2)
 # def sort_things(self):
 #     things=[]
 #     used_ra=[]
