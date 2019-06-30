@@ -109,7 +109,7 @@ i_err = hdu2[1].data['i-band Error']
 
 
 def plot_check(thing_index,things):
-    plt.figure()
+    # plt.figure()
     plt.title('Light Curve')
     plt.xlabel('Date')
     plt.ylabel('Magnitude')

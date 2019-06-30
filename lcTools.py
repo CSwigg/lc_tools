@@ -10,6 +10,7 @@ Light curve tools are meant to take in a csv output file from a CasJobs query
 and assist with quick light curve plots.
 '''
 
+
 class lcTools:
     
     def __init__(self, file_path):
