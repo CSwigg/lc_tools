@@ -22,7 +22,7 @@ class lcTools:
                 print('\nWARNING: Table was not initialized.\n')
                 return 
             else:
-                file_name = input('No such table, try again: ')
+                self.file_name = self.file_path + input('No such table, try again: ')
 
         with open(self.file_name) as f: 
             self.header = next(csv.reader(f, delimiter=','))
