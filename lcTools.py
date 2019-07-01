@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 from astropy.table import Table, Column
 import csv

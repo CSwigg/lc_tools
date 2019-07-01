@@ -7,7 +7,7 @@ import lcTools as check
 import os 
 import traceback
 stripe82_data=np.genfromtxt('/Users/admin/Desktop/astro_research/our_object.csv',delimiter=',',skip_header=1)
-csv_data_path = '/Users/admin/Desktop/astro_research/lc_tools/data_files/'
+csv_data_path = '/Users/admin/Desktop/lc_tools/data_files/'
 def flux_to_mag(flux):
     return -2.5*np.log10(flux/3631)
 
