@@ -118,7 +118,7 @@ class groupedThing():
     def sort_by_date(date,mag,err_mag):
         date, mag, err_mag= zip(*sorted(zip(date,mag,err_mag)))
         return np.asarray(date), np.asarray(mag), np.asarray(err_mag)
-    
+    @staticmethod
     def to_fits(d:dict, name:str):
         '''
         Takes in a dictionary of data and outputs to fits file based on key names
