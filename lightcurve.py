@@ -22,7 +22,7 @@ with a CasJobs query. I use the points I found for our source in a CasJobs query
 and wrote that out to a fits file using lc_tools.to_fits(). Wrote as 'thing0.fits'.
 It only contains the i-band photometry. 
 '''
-hdu2 = fits.open('/Users/admin/Desktop/astro_research/thing0.fits')
+hdu2 = fits.open('/Users/admin/Desktop/astro_research/our_objectDR14_clean.fits')
 
 
 mjd=hdu2[1].data['Date']
@@ -109,13 +109,13 @@ i_err = hdu2[1].data['i-band Error']
 
 def plot_check(thing_index, things, header):
     plt.figure()
-    plt.title('Light Curve')
+    plt.title('Light Curve: SDSS i-band')
     plt.xlabel('Date')
     plt.ylabel('Magnitude')
     
     gt = groupedThing(things[int(thing_index)], header)
     dict_data = gt.dict_data()
-    gt.to_fits(dict_data, 'our_objectDR14_clean.fits')
+    # gt.to_fits(dict_data, 'our_objectDR14_clean.fits')
     thing = gt.thing
     ###### SDSS ######
     plt.plot(date_spec,i_mag,linewidth=0.5,linestyle='--',c='orange')
@@ -135,7 +135,7 @@ def plot_check(thing_index, things, header):
     t2=Time(mjd_t,format='mjd')
     d_t=t2.decimalyear
     d_t,i_t,err_i_t=zip(*sorted(zip(d_t,i_t,err_i_t)))
-    plt.scatter(d_t,i_t,s=10,label='Other Object at ra={}, dec={}'.format(np.round(ra_t[0],3),np.round(dec_t[0],3)))
+    plt.scatter(d_t,i_t,s=10,label='Our Object Stripe 82 at ra={}, dec={}'.format(np.round(ra_t[0],3),np.round(dec_t[0],3)))
     # plt.plot(d_t,i_t1,linewidth=0.5,linestyle='--')
     plt.errorbar(d_t,i_t,err_i_t,fmt='none',linewidth=0.5,capsize=2,c='b')
     ###### SDSS ######

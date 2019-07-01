@@ -118,20 +118,31 @@ class groupedThing():
     def sort_by_date(date,mag,err_mag):
         date, mag, err_mag= zip(*sorted(zip(date,mag,err_mag)))
         return np.asarray(date), np.asarray(mag), np.asarray(err_mag)
-    @staticmethod
-    def to_fits(d:dict, name:str):
+    
+    # @staticmethod
+    # def to_fits(d:dict, name:str):
+    #     '''
+    #     Takes in a dictionary of data and outputs to fits file based on key names
+    #     '''
+    #     t = Table()
+    #     t[key] = [Column(d[key]) for key, value in d.items()]
+    #     t.write('/Users/admin/Desktop/astro_research/{}.fits'.format(name))
+
+    def to_fits2(self,date_index:int, mag_index:int, err_mag_index:int, filter_name:str, name:str):
         '''
-        Takes in a dictionary of data and outputs to fits file based on key names
+        Takes the date and photometry of one band of a source and writes it to a fits file
         '''
+        
+        date = self.thing[:,date_index]
+        mag = self.thing[:,mag_index]
+        err_mag = self.thing[:,err_mag_index]
+
         t = Table()
-        t[key] = [Column(d[key]) for key, value in d.items()]
-        t.write('/Users/admin/Desktop/astro_research/{}.fits'.format(name))
+        t['Date'] = Column(date)
+        t[filter_name + '-band'] = Column(mag)
+        t[filter_name + '-band Error'] = Column(err_mag)
 
-
-
-
-
-
+        t.write('/Users/admin/Desktop/astro_research/' + name + '.fits')
 
 
 
