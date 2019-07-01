@@ -2,8 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.time import Time
-from lcTools import lcTools
-import lcTools as check
+from lcTools import lcTools, groupedThing
 import os 
 import traceback
 stripe82_data=np.genfromtxt('/Users/admin/Desktop/astro_research/our_object.csv',delimiter=',',skip_header=1)
@@ -108,15 +107,14 @@ i_err = hdu2[1].data['i-band Error']
 # plt.errorbar(date_manual,z_mag,z_err,fmt='none',c='purple',linewidth=0.5)
 
 
-def plot_check(thing_index,things):
+def plot_check(thing_index, things, header):
     plt.figure()
     plt.title('Light Curve')
     plt.xlabel('Date')
     plt.ylabel('Magnitude')
     
-    
-    thing=check.unpack_thing(things[int(thing_index)])
-    
+    gt = groupedThing(things[int(thing_index)], header)
+    thing = gt.thing
     ###### SDSS ######
     plt.plot(date_spec,i_mag,linewidth=0.5,linestyle='--',c='orange')
     plt.scatter(date_spec,i_mag,s=10,c='orange',label='Our Object: DR14')
@@ -236,7 +234,7 @@ def plot_show():
             table.show_things(things)
             choice=input('Which thing?: ')
             while choice != '':
-                plot_check(choice, things)
+                plot_check(choice, things, table.header)
                 choice=input('Which thing?: ')
             user_input=input('Continue? (y/n): ')
         except Exception as e:
