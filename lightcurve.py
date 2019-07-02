@@ -144,6 +144,16 @@ def plot_check(thing_index, things, header):
     plt.gca().invert_yaxis()
     plt.show()
 
+# Pass in instance of lcTools 
+def diff_phot(table:lcTools):
+    things = table.group_things()
+    dict_thing = table.dict_things(things)
+    print(dict_thing)
+
+
+
+
+
 # Compares changes in photometry
 def diff_photometry_dr14(things):
     '''
@@ -256,10 +266,11 @@ def table_data():
        
         try:
             table.deg_to_arcsec()
-            things = table.group_things()
+            
             table.show_things(things)
+            diff_phot(table)
             # diff_photometry_dr14(things)
-            return things,table
+         
         except Exception as e:
             print(e)
             if type(e) is TypeError and table is None:
@@ -270,5 +281,5 @@ def table_data():
             
             user_input = input('Continue? (y/n): ')
 
-plot_show()
+table_data()
 # things,table = table_data()

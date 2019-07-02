@@ -119,11 +119,11 @@ class groupedThing():
         return np.asarray(date), np.asarray(mag), np.asarray(err_mag)
     
     @staticmethod
-    def to_fits(d:dict, name:str):
+    def to_fits(name:str):
         '''
         Takes in a dictionary of data and outputs to fits file based on key names
         '''
-        t = Table(d)
+        t = Table(dict_data())
         t.write('/Users/admin/Desktop/astro_research/{}.fits'.format(name))
 
     def to_fits2(self,date_index:int, mag_index:int, err_mag_index:int, filter_name:str, name:str):
