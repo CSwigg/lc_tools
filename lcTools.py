@@ -104,10 +104,9 @@ class groupedThing():
         '''
         # Turns list of numpy arrays into a single numpy array of all detections
         self.thing = np.stack(thing, axis = 0)
-       
         self.detection_count = len(self.thing)
-        self.header = header
-    
+        self.header = np.asarray(header)
+
     def dict_data(self):
         d = {}
         for i in range(len(self.thing[0])):
@@ -119,14 +118,13 @@ class groupedThing():
         date, mag, err_mag= zip(*sorted(zip(date,mag,err_mag)))
         return np.asarray(date), np.asarray(mag), np.asarray(err_mag)
     
-    # @staticmethod
-    # def to_fits(d:dict, name:str):
-    #     '''
-    #     Takes in a dictionary of data and outputs to fits file based on key names
-    #     '''
-    #     t = Table()
-    #     t[key] = [Column(d[key]) for key, value in d.items()]
-    #     t.write('/Users/admin/Desktop/astro_research/{}.fits'.format(name))
+    @staticmethod
+    def to_fits(d:dict, name:str):
+        '''
+        Takes in a dictionary of data and outputs to fits file based on key names
+        '''
+        t = Table(d)
+        t.write('/Users/admin/Desktop/astro_research/{}.fits'.format(name))
 
     def to_fits2(self,date_index:int, mag_index:int, err_mag_index:int, filter_name:str, name:str):
         '''
@@ -148,9 +146,10 @@ class groupedThing():
 
 
 
-
-
-
+    # TODO 
+    ### Sort by date for all columns:
+    # index_date = np.where(np.char.find(header,'mjd') == 0)
+    # self.thing = self.thing[self.thing[:,index_date].argsort()] <--- Doesn't works
 
 
 

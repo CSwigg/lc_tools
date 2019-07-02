@@ -114,7 +114,7 @@ def plot_check(thing_index, things, header):
     plt.ylabel('Magnitude')
     
     gt = groupedThing(things[int(thing_index)], header)
-    dict_data = gt.dict_data()
+    
     # gt.to_fits(dict_data, 'our_objectDR14_clean.fits')
     thing = gt.thing
     ###### SDSS ######
