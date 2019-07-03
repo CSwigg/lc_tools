@@ -147,12 +147,40 @@ def plot_check(thing_index, things, header):
 # Pass in instance of lcTools 
 def diff_phot(table:lcTools):
     things = table.group_things()
-    dict_thing = table.dict_things(things)
-    print(dict_thing)
+    table.show_things(things)
+    header = table.header
+    # List of dictionaries
+    d_things = []
+    
+    [d_things.append(groupedThing(thing,header).dict_data()) for thing in things]
+
+    for x in d_things:
+        if x['thingID'][0] == 77759292:
+            our_object = x
 
 
-
-
+    i_mags = {}
+    errs_i = {}
+    dates = {}
+    for index, x in enumerate(d_things):
+        if len(x['mjd_i']) == len(our_object['mjd_i']) and np.mean(x['modelMag_i']) <= 20.5 and np.mean(x['modelMag_i']) >= 19.5:
+            i_mags[index] = x['modelMag_i']
+            errs_i[index] = x['modelMagErr_i']
+            dates[index] = x['mjd_i']
+    print(i_mags.keys())
+    median = np.median((i_mags[28],i_mags[42],i_mags[52],i_mags[55],i_mags[67],i_mags[68],i_mags[81],i_mags[110],i_mags[115],i_mags[134],i_mags[139],i_mags[140],i_mags[147],i_mags[150],i_mags[163],i_mags[168],i_mags[170],i_mags[195],i_mags[197],i_mags[207],i_mags[208],i_mags[222],i_mags[226],i_mags[228],i_mags[242],i_mags[265],i_mags[267],i_mags[272],i_mags[281],i_mags[286]),axis = 0)
+    plt.figure()
+    # plt.title('Median i-band of 30 sources overplotted on our object\'s light curve')
+    plt.title('NeV i-band - median(30 other souces i-band)')
+    plt.xlabel('MJD')
+    plt.ylabel('Magnitude')
+    plt.scatter(our_object['mjd_i'], our_object['modelMag_i'] - median)
+    plt.plot(our_object['mjd_i'], our_object['modelMag_i'] - median)
+    # plt.scatter(our_object['mjd_i'], our_object['modelMag_i'], label='Our Object')
+    # plt.scatter(our_object['mjd_i'], median, label='Median 30 sources')
+    plt.gca().invert_yaxis()
+    # plt.legend()
+    plt.show()
 
 # Compares changes in photometry
 def diff_photometry_dr14(things):
@@ -267,13 +295,12 @@ def table_data():
         try:
             table.deg_to_arcsec()
             
-            table.show_things(things)
             diff_phot(table)
             # diff_photometry_dr14(things)
          
         except Exception as e:
             print(e)
-            if type(e) is TypeError and table is None:
+            if type(e) is TypeError:
                 print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
             else:
                 print('\n' + traceback.format_exc() + '\n')

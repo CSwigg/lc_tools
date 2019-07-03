@@ -17,8 +17,10 @@ class lcTools:
         self.table=[]
         self.l_grouped = []
         self.file_name = self.file_path + input("Please enter the file name of the table you'd like to use (or type 'stop'): ")
+        # Attribute file_name to use throughtout the instance since file_name has to be set to null at end of __init__
+
         while (not os.path.exists(self.file_name)):
-            if self.file_name == 'stop':
+            if self.file_name == self.file_path + 'stop':
                 print('\nWARNING: Table was not initialized.\n')
                 return 
             else:
@@ -27,6 +29,7 @@ class lcTools:
         with open(self.file_name) as f: 
             self.header = next(csv.reader(f, delimiter=','))
             self.table = np.genfromtxt(f,delimiter=',',dtype='float',skip_header=1)
+            
         
     def deg_to_arcsec(self):
         self.table[:,0:2]=self.table[:,0:2]*3600
@@ -81,9 +84,9 @@ class lcTools:
         return stacked_thing
         # Creates a dictionary of things 
    
-    def dict_things(things):
+    def dict_things(self, things):
         d = {}
-        d['thing' + str(i)] = [unpack_thing(thing) for i, thing in enumerate(things)]
+        d['thing' + str(i)] = [self.unpack_thing(thing) for i, thing in enumerate(things)]
         return d
     
    
