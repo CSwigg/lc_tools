@@ -10,7 +10,7 @@ and assist with quick light curve plots.
 '''
 
 
-class lcTools:
+class lcTool:
     
     def __init__(self, file_path):
         self.file_path = file_path
@@ -27,9 +27,8 @@ class lcTools:
                 self.file_name = self.file_path + input('No such table, try again: ')
 
         with open(self.file_name) as f: 
-            self.header = next(csv.reader(f, delimiter=','))
-            self.table = np.genfromtxt(f,delimiter=',',dtype='float',skip_header=1)
-            
+            self.table = np.genfromtxt(f,delimiter=',',dtype='float', names = True)
+            self.header = list(self.table.dtype.names)
         
     def deg_to_arcsec(self):
         self.table[:,0:2]=self.table[:,0:2]*3600
@@ -91,8 +90,35 @@ class lcTools:
     
    
 
+class panstarrsTool(lcTool):
 
-
+    def __init__(self, file_path, indices):
+        super().__init__(file_path)
+        
+    
+    def group_things(self) -> np.ndarray:
+        
+        '''
+        Groups detections by objID or by astrometry variations 
+        '''
+       
+        # For PS files with output objID
+        try:
+            df = pd.read_csv(self.file_name)
+            gf = df.groupby('objID')
+            grouped = [gf.get_group(x) for x in gf.groups]
+            [self.l_grouped.append(x.values) for x in grouped]
+            return self.l_grouped
+        # Without objID
+        except KeyError:
+            print('\nSorting by astrometry variations:\n')
+            df = pd.read_csv(self.file_name)
+            gf = df.groupby([np.round(df['ra'],3), np.round(df['dec'],3)])
+            grouped = [gf.get_group(x) for x in gf.groups]
+            self.l_grouped = []
+            [self.l_grouped.append(x.values) for x in grouped]
+            return self.l_grouped
+    
 
 class groupedThing():
     '''

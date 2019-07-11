@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.time import Time
-from lcTools import lcTools, groupedThing
+from lcTools import lcTool, groupedThing
 import os 
 import traceback
 stripe82_data=np.genfromtxt('/Users/admin/Desktop/astro_research/our_object.csv',delimiter=',',skip_header=1)
@@ -145,7 +145,7 @@ def plot_check(thing_index, things, header):
     plt.show()
 
 # Pass in instance of lcTools 
-def diff_phot(table:lcTools):
+def diff_phot(table:lcTool):
     things = table.group_things()
     table.show_things(things)
     header = table.header
@@ -162,11 +162,13 @@ def diff_phot(table:lcTools):
     i_mags = {}
     errs_i = {}
     dates = {}
+    
     for index, x in enumerate(d_things):
         if len(x['mjd_i']) == len(our_object['mjd_i']) and np.mean(x['modelMag_i']) <= 20.5 and np.mean(x['modelMag_i']) >= 19.5:
             i_mags[index] = x['modelMag_i']
             errs_i[index] = x['modelMagErr_i']
             dates[index] = x['mjd_i']
+    
     print(i_mags.keys())
     median = np.median((i_mags[28],i_mags[42],i_mags[52],i_mags[55],i_mags[67],i_mags[68],i_mags[81],i_mags[110],i_mags[115],i_mags[134],i_mags[139],i_mags[140],i_mags[147],i_mags[150],i_mags[163],i_mags[168],i_mags[170],i_mags[195],i_mags[197],i_mags[207],i_mags[208],i_mags[222],i_mags[226],i_mags[228],i_mags[242],i_mags[265],i_mags[267],i_mags[272],i_mags[281],i_mags[286]),axis = 0)
     plt.figure()
@@ -267,7 +269,7 @@ def return_things(self,things):
 def plot_show():
     user_input='y'
     while user_input=='y':
-        table = lcTools(csv_data_path)
+        table = lcTool(csv_data_path)
         try:
             table.deg_to_arcsec()
             things = table.group_things()
@@ -290,7 +292,7 @@ def plot_show():
 def table_data():
     user_input = 'y'
     while user_input == 'y':
-        table = lcTools(csv_data_path)
+        table = lcTool(csv_data_path)
        
         try:
             table.deg_to_arcsec()
@@ -308,5 +310,5 @@ def table_data():
             
             user_input = input('Continue? (y/n): ')
 
-table_data()
+plot_show()
 # things,table = table_data()
