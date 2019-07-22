@@ -1,0 +1,17 @@
+SELECT 
+  p.ra,p.dec,f.mjd_i,f.mjd_u,f.mjd_g,f.mjd_r,f.mjd_z,p.modelMag_u,p.modelMag_g,p.modelMag_r,p.modelMag_i,p.modelMag_z,p.objID,p.modelMagErr_i, p.modelMagErr_g, p.modelMagErr_u,p.modelMagErr_r,p.modelMagErr_z
+FROM 
+  photoObj p 
+JOIN field f ON p.fieldid=f.fieldid
+/* JOIN detectionIndex d ON p.objID=d.objID /*
+WHERE 
+  f.mjd_i != 0
+  /*AND p.psfMag_i - p.cmodelMag_i > 0.145*/
+  AND p.ra BETWEEN 12.19337 AND 12.19382
+  AND p.dec BETWEEN -.77034 AND -.76987
+  AND ((p.flags & 0x10000000) != 0)
+  AND ((p.flags & 0x8100000c00a0) = 0)
+  AND ((p.flags & 0x400000000000) = 0)
+  AND (((p.flags & 0x100000000000) = 0) or (flags_r & 0x1000) = 0)
+ORDER BY
+  f.mjd_i

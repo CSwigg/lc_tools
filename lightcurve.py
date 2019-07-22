@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import astropy.visualization as v
 from astropy.io import fits
 from astropy.time import Time
 from lcTools import lcTools, groupedThing
@@ -40,7 +41,7 @@ i_err = hdu2[1].data['i-band Error']
 # date_spec=t.decimalyear
 
 # u_mag=hdu2[1].data['modelmag_u']
-# g_mag=hdu2[1].data['modelmag_g']
+# g_mag=hdu2[1].data[sdss_band]
 # r_mag=hdu2[1].data['modelmag_r']
 # i_mag=hdu2[1].data['modelmag_r']
 # z_mag=hdu2[1].data['modelmag_z']
@@ -56,7 +57,7 @@ i_err = hdu2[1].data['i-band Error']
 # u_err=hdu2[1].data['modelmagerr_u']
 # g_err=hdu2[1].data['modelmagerr_g']
 # r_err=hdu2[1].data['modelmagerr_r']
-# i_err=hdu2[1].data['modelmagerr_i']
+# i_err=hdu2[1].data[filter_err]
 # z_err=hdu2[1].data['modelmagerr_z']
 
 ############# These lines correspond to reading in data from nev_stripe82_2.fits ###############
@@ -106,6 +107,13 @@ i_err = hdu2[1].data['i-band Error']
 # plt.scatter(date_manual,z_mag,s=10,c='purple')
 # plt.errorbar(date_manual,z_mag,z_err,fmt='none',c='purple',linewidth=0.5)
 
+sdss_band = 'modelMag_i'
+filter_date = 'mjd_i'
+filter_err = 'modelMagErr_i'
+
+def sim_check(arr1, arr2):
+    diff = arr1 - arr2
+    return np.sum(diff**2)
 
 def plot_check(thing_index, things, header):
     plt.figure()
@@ -146,6 +154,7 @@ def plot_check(thing_index, things, header):
 
 # Pass in instance of lcTools 
 def diff_phot(table:lcTools):
+
     things = table.group_things()
     table.show_things(things)
     header = table.header
@@ -154,34 +163,131 @@ def diff_phot(table:lcTools):
     
     [d_things.append(groupedThing(thing,header).dict_data()) for thing in things]
 
-    for x in d_things:
-        if x['thingID'][0] == 77759292:
-            our_object = x
+    try:
+        for x in d_things:
+            if x['thingID'][0] == 	77759292:
+                our_object = x
+        i_mags = {}
+        errs_i = {}
+        dates = {}
+        iD = {}
+        for index, x in enumerate(d_things):
+            if len(x[filter_date]) == len(our_object[filter_date]) and np.mean(x[sdss_band]) <= 23 and np.mean(x[sdss_band]) >= 21:
+                i_mags[index] = x[sdss_band]
+                errs_i[index] = x[filter_err]
+                dates[index] = x[filter_date]
+                try:
+                    iD[index] = x['thingID']
+                except:
+                    iD[index] =  str(index)
+        for dates, mags, errs, names in zip(dates.values(),i_mags.values(),errs_i.values(), iD.values()):
+            
+            # plt.figure()
+            # plt.title(str(names[0]))
+            # plt.scatter(dates,mags)
+            # plt.errorbar(dates,mags,errs)
+            
+            # plt.figure()
+            # plt.title(names[0])
+            # v.hist(mags)
+            # plt.show()
+            
+            print('\n SD of ' + str(names[0]) + ': ' + str(np.std(mags)) + ' Median error: ' + str(np.median((errs))))
+       
+        median = np.median(list(i_mags.values()),axis=0)
+        print('\n' + str(np.std(median)))
+        plt.figure()
+        # plt.title('Median i-band of 30 sources overplotted on our object\'s light curve')
+        plt.title('Object i-band - median(30 other sources i-band)')
+        plt.xlabel('MJD')
+        plt.ylabel('Magnitude')
+        plt.scatter(our_object[filter_date], our_object[sdss_band] - median)
+        plt.plot(our_object[filter_date], our_object[sdss_band] - median)
+        plt.gca().invert_yaxis()
+        plt.show()
 
+        plt.figure()
+        plt.title('Comparison')
+        plt.xlabel('MJD')
+        plt.ylabel('Magnitude')
+        plt.scatter(our_object[filter_date], our_object[sdss_band], label='Our Object')
+        plt.scatter(our_object[filter_date], median, label='Median 30 sources')
+        plt.gca().invert_yaxis()
+        # plt.legend()
+        plt.show()
+                
+    
+    except:
+        '''
+        Explanation for following ~40 lines of code: Since a lot of Stripe 82 detections don't line up on exact dates, comparisons
+        between sources are done by getting a reference source from user (our quasar, in this case) and interpolating date and magnitude
+        values of the other sources in order to line up with those of the reference source. Cuts are made before interpolating: Sources must
+        have a start date and end date similar to the reference source and a similar amount of detections. Source should also be within the same
+        brightness range. Further cuts may be made to rule out actual variability: std/err > 1
+        '''
+        # For our quasar, this index is 1084 after grouping 82_diff.csv, index 492 for 82_diff_clean.csv
+        x = input('Select our object index: ')
+        our_object = list(d_things)[int(x)]
+    
+        from scipy.interpolate import interp1d
+        i_mags = {}
+        errs_i = {}
+        dates = {}
+        iD = {}
+        for i, thing in enumerate(d_things):
+            if np.isclose(len(thing[filter_date]),len(our_object[filter_date]), atol = 10) == True and np.all(np.isclose([np.min(thing[filter_date]), np.max(thing[filter_date])], [np.min(our_object[filter_date]), np.max(our_object[filter_date])], atol = [50, 50])) == True:
+                if np.mean(thing[sdss_band]) <= 21 and np.mean(thing[sdss_band]) >= 19.5 and np.std(thing[sdss_band])/np.median(thing[filter_err]) < 8 and i != 1084:
+                    
+                    f_interp = interp1d(np.arange(thing[sdss_band].size), thing[sdss_band])
+                    i_mags[i] = f_interp(np.linspace(0, thing[sdss_band].size - 1, our_object[filter_date].size))
+                    dates[i] = f_interp(np.linspace(0, thing[filter_date].size - 1, our_object[filter_date].size))
+                    errs_i[i] = f_interp(np.linspace(0, thing[filter_err].size - 1, our_object[filter_date].size))
+                    
+                    plt.figure()
+                    plt.title('Check interpolation of: ' + str(i))
+                    plt.xlabel('MJD')
+                    plt.ylabel('Mag')
+                    plt.scatter(thing[filter_date], thing[sdss_band], c='blue')
+                    plt.plot(thing[filter_date], thing[sdss_band], c='blue', linestyle = '--', label = 'original')
+                    plt.scatter(our_object[filter_date], i_mags[i], c='orange', alpha = 0.7)
+                    plt.plot(our_object[filter_date], i_mags[i], c='orange', linestyle = '--', alpha = 0.7, label = 'interpolation')
+                    plt.gca().invert_yaxis()
+                    plt.legend()
+                    plt.show()
 
-    i_mags = {}
-    errs_i = {}
-    dates = {}
-    for index, x in enumerate(d_things):
-        if len(x['mjd_i']) == len(our_object['mjd_i']) and np.mean(x['modelMag_i']) <= 20.5 and np.mean(x['modelMag_i']) >= 19.5:
-            i_mags[index] = x['modelMag_i']
-            errs_i[index] = x['modelMagErr_i']
-            dates[index] = x['mjd_i']
-    print(i_mags.keys())
-    median = np.median((i_mags[28],i_mags[42],i_mags[52],i_mags[55],i_mags[67],i_mags[68],i_mags[81],i_mags[110],i_mags[115],i_mags[134],i_mags[139],i_mags[140],i_mags[147],i_mags[150],i_mags[163],i_mags[168],i_mags[170],i_mags[195],i_mags[197],i_mags[207],i_mags[208],i_mags[222],i_mags[226],i_mags[228],i_mags[242],i_mags[265],i_mags[267],i_mags[272],i_mags[281],i_mags[286]),axis = 0)
-    plt.figure()
-    # plt.title('Median i-band of 30 sources overplotted on our object\'s light curve')
-    plt.title('NeV i-band - median(30 other souces i-band)')
-    plt.xlabel('MJD')
-    plt.ylabel('Magnitude')
-    plt.scatter(our_object['mjd_i'], our_object['modelMag_i'] - median)
-    plt.plot(our_object['mjd_i'], our_object['modelMag_i'] - median)
-    # plt.scatter(our_object['mjd_i'], our_object['modelMag_i'], label='Our Object')
-    # plt.scatter(our_object['mjd_i'], median, label='Median 30 sources')
-    plt.gca().invert_yaxis()
-    # plt.legend()
-    plt.show()
+                    print('\n Coordinates: ra=' + str(thing['ra'][0]) + ', dec=' + str(thing['dec'][0]))
+                    print('SD of ' + str(i) + ': ' + str(np.std(thing[sdss_band])) + ' Median error: ' + str(np.median((thing[filter_err]))))
+                    print('Mean interpolated magnitudes: ' + str(np.mean(i_mags[i])) + ' VS Mean original: ' + str(np.mean(thing[sdss_band])))
+                    print(np.mean(np.diff(thing[sdss_band])), np.mean(np.diff(i_mags[i])))                
+      
+        median = np.median(list(i_mags.values()),axis=0)
+        print('\n' + str(np.std(median)))
+        plt.figure()
+        # plt.title('Median i-band of 30 sources overplotted on our object\'s light curve')
+        plt.title('Object i-band - median(30 other sources i-band)')
+        plt.xlabel('MJD')
+        plt.ylabel('Magnitude')
+        plt.scatter(our_object[filter_date], our_object[sdss_band] - median)
+        plt.plot(our_object[filter_date], our_object[sdss_band] - median)
+        plt.gca().invert_yaxis()
+        plt.show()
 
+        plt.figure()
+        plt.title('Comparison')
+        plt.xlabel('MJD')
+        plt.ylabel('Magnitude')
+        plt.scatter(our_object[filter_date], our_object[sdss_band], label='Our Object')
+        plt.scatter(our_object[filter_date], median, label='Median ' + str(len(i_mags.values())) + ' sources')
+        plt.gca().invert_yaxis()
+        plt.legend()
+        plt.show()
+
+    
+
+    
+    # median = np.median((i_mags[28],i_mags[42],i_mags[52],i_mags[55],i_mags[67],i_mags[68],i_mags[81],i_mags[110],i_mags[115],i_mags[134],i_mags[139],i_mags[140],i_mags[147],i_mags[150],i_mags[163],i_mags[168],i_mags[170],i_mags[195],i_mags[197],i_mags[207],i_mags[208],i_mags[222],i_mags[226],i_mags[228],i_mags[242],i_mags[265],i_mags[267],i_mags[272],i_mags[286]),axis = 0)
+
+    # put code back
 # Compares changes in photometry
 def diff_photometry_dr14(things):
     '''
@@ -307,6 +413,7 @@ def table_data():
                 print(type(e))
             
             user_input = input('Continue? (y/n): ')
+
 
 table_data()
 # things,table = table_data()
