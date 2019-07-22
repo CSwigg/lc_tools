@@ -51,7 +51,7 @@ class lcTool:
         except KeyError:
             print('\nSorting by astrometry variations:\n')
             df = pd.read_csv(self.file_name)
-            gf = df.groupby([np.round(df['ra'],3), np.round(df['dec'],3)])
+            gf = df.groupby([np.round(df['ra'],4), np.round(df['dec'],4)])
             grouped = [gf.get_group(x) for x in gf.groups]
             self.l_grouped = []
             [self.l_grouped.append(x.values) for x in grouped]
@@ -61,7 +61,7 @@ class lcTool:
     # TODO: Fix formating so that columns are aligned: Use format strings, or pandas(?)
     @staticmethod
     def show_things(things):
-        
+   
         '''
         Run sort_things(table) first!!!
         '''
