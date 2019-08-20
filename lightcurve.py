@@ -6,6 +6,8 @@ from astropy.time import Time
 from lcTools import lcTools, groupedThing
 import os 
 import traceback
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 stripe82_data=np.genfromtxt('/Users/admin/Desktop/astro_research/our_object.csv',delimiter=',',skip_header=1)
 csv_data_path = '/Users/admin/Desktop/lc_tools/data_files/'
 def flux_to_mag(flux):
@@ -117,7 +119,6 @@ def sim_check(arr1, arr2):
 
 def plot_check(thing_index, things, header):
     plt.figure()
-    plt.title('Light Curve: SDSS i-band')
     plt.xlabel('Date')
     plt.ylabel('Magnitude')
     
@@ -126,9 +127,9 @@ def plot_check(thing_index, things, header):
     # gt.to_fits(dict_data, 'our_objectDR14_clean.fits')
     thing = gt.thing
     ###### SDSS ######
-    plt.plot(date_spec,i_mag,linewidth=0.5,linestyle='--',c='orange')
-    plt.scatter(date_spec,i_mag,s=10,c='orange',label='Our Object: DR14')
-    plt.errorbar(date_spec,i_mag,i_err,fmt='none',c='orange',linewidth=0.5,capsize=1,ecolor='orange')
+    #plt.plot(date_spec,i_mag,linewidth=0.5,linestyle='--',c='orange')
+    #plt.scatter(date_spec,i_mag,s=10,c='orange',label='Our Object: DR14')
+    #plt.errorbar(date_spec,i_mag,i_err,fmt='none',c='orange',linewidth=0.5,capsize=1,ecolor='orange')
 
     ra_t = thing[:,0]
     dec_t = thing[:,1]
@@ -139,17 +140,39 @@ def plot_check(thing_index, things, header):
     i_t=thing[:,6]
     z_t=thing[:,7]
     err_i_t=thing[:,9]
-   
+    err_u_t=thing[:,10]
+    err_g_t=thing[:,11]
+    err_r_t=thing[:,12]
+    err_z_t=thing[:,13]
     t2=Time(mjd_t,format='mjd')
     d_t=t2.decimalyear
-    d_t,i_t,err_i_t=zip(*sorted(zip(d_t,i_t,err_i_t)))
-    plt.scatter(d_t,i_t,s=10,label='Our Object Stripe 82 at ra={}, dec={}'.format(np.round(ra_t[0],3),np.round(dec_t[0],3)))
-    # plt.plot(d_t,i_t1,linewidth=0.5,linestyle='--')
-    plt.errorbar(d_t,i_t,err_i_t,fmt='none',linewidth=0.5,capsize=2,c='b')
+    d_t,u_t,g_t,r_t,i_t,z_t,err_i_t=zip(*sorted(zip(d_t,u_t,g_t,r_t,i_t,z_t,err_i_t)))
+    
+    # plt.scatter(d_t,u_t,s=10,label='u',c='cyan')
+    # plt.plot(d_t,u_t,linewidth=0.5, linestyle='--', c='cyan')
+    # plt.errorbar(d_t, u_t, err_u_t, c='cyan',linewidth=0.5)
+    
+    plt.scatter(d_t,g_t,s=10,label='g',c='magenta')
+    plt.plot(d_t,g_t,linewidth=0.5, linestyle='--', c='magenta')
+    plt.errorbar(d_t, g_t, err_g_t, c='magenta',linewidth=0.5)
+    
+    plt.scatter(d_t,r_t,s=10,label='r',c='green')
+    plt.plot(d_t,r_t,linewidth=0.5, linestyle='--', c='green')
+    plt.errorbar(d_t, r_t, err_r_t, c='green',linewidth=0.5)
+   
+    plt.scatter(d_t,i_t,s=10,label='i',c='orange')
+    plt.plot(d_t,i_t,linewidth=0.5, linestyle='--', c='orange') 
+    plt.errorbar(d_t, i_t, err_i_t, c='orange',linewidth=0.5)
+
+    plt.scatter(d_t,z_t,s=10,label='z',c='red')
+    plt.plot(d_t,z_t,linewidth=0.5, linestyle='--', c='red')
+    plt.errorbar(d_t, z_t, err_z_t, c='red',linewidth=0.5)
     ###### SDSS ######
    
     plt.legend()
     plt.gca().invert_yaxis()
+    plt.savefig('/Users/admin/Desktop/astro_research/plots/sdss82.png',
+                overwrite=True, dpi=300)
     plt.show()
 
 # Pass in instance of lcTools 
@@ -370,50 +393,52 @@ def return_things(self,things):
     return self.things
 
 
-def plot_show():
-    user_input='y'
-    while user_input=='y':
-        table = lcTools(csv_data_path)
-        try:
-            table.deg_to_arcsec()
-            things = table.group_things()
-            table.show_things(things)
-            choice=input('Which thing?: ')
-            while choice != '':
-                plot_check(choice, things, table.header)
-                choice=input('Which thing?: ')
-            user_input=input('Continue? (y/n): ')
-        except Exception as e:
-            if type(e) is TypeError and table is None:
-                print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
-            else:
-                print('\n' + traceback.format_exc() + '\n')
-                print(type(e))
+# def plot_show():
+#     user_input='y'
+#     while user_input=='y':
+#         table = lcTools(csv_data_path)
+#         try:
+#             table.deg_to_arcsec()
+#             things = table.group_things()
+#             table.show_things(things)
+#             choice=input('Which thing?: ')
+#             while choice != '':
+#                 plot_check(choice, things, table.header)
+#                 choice=input('Which thing?: ')
+#             user_input=input('Continue? (y/n): ')
+#         except Exception as e:
+#             if type(e) is TypeError and table is None:
+#                 print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
+#             else:
+#                 print('\n' + traceback.format_exc() + '\n')
+#                 print(type(e))
                   
-            user_input = input('Continue? (y/n): ')
+#             user_input = input('Continue? (y/n): ')
         
 
-def table_data():
-    user_input = 'y'
-    while user_input == 'y':
-        table = lcTools(csv_data_path)
+# def table_data():
+#     user_input = 'y'
+#     while user_input == 'y':
+#         table = lcTools(csv_data_path)
        
-        try:
-            table.deg_to_arcsec()
+#         try:
+#             table.deg_to_arcsec()
             
-            diff_phot(table)
-            # diff_photometry_dr14(things)
+#             diff_phot(table)
+#             # diff_photometry_dr14(things)
          
-        except Exception as e:
-            print(e)
-            if type(e) is TypeError:
-                print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
-            else:
-                print('\n' + traceback.format_exc() + '\n')
-                print(type(e))
+#         except Exception as e:
+#             print(e)
+#             if type(e) is TypeError:
+#                 print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
+#             else:
+#                 print('\n' + traceback.format_exc() + '\n')
+#                 print(type(e))
             
-            user_input = input('Continue? (y/n): ')
+#             user_input = input('Continue? (y/n): ')
 
 
-table_data()
+table = lcTools(csv_data_path)
+
+# plot_show()
 # things,table = table_data()

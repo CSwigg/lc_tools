@@ -52,7 +52,7 @@ class lcTools:
         except KeyError:
             print('\nSorting by astrometry variations:\n')
             df = pd.read_csv(self.file_name)
-            gf = df.groupby([np.round(df['ra'],4), np.round(df['dec'],4)])
+            gf = df.groupby([np.round(df['ra'],3), np.round(df['dec'],3)])
             grouped = [gf.get_group(x) for x in gf.groups]
             self.l_grouped = []
             [self.l_grouped.append(x.values) for x in grouped]
