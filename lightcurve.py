@@ -6,6 +6,8 @@ from astropy.time import Time
 from lcTools import lcTool, groupedThing
 import os 
 import traceback
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 stripe82_data=np.genfromtxt('/Users/admin/Desktop/astro_research/our_object.csv',delimiter=',',skip_header=1)
 csv_data_path = '/Users/admin/Desktop/lc_tools/data_files/'
 def flux_to_mag(flux):
@@ -117,7 +119,6 @@ def sim_check(arr1, arr2):
 
 def plot_check(thing_index, things, header):
     plt.figure()
-    plt.title('Light Curve: SDSS i-band')
     plt.xlabel('Date')
     plt.ylabel('Magnitude')
     
@@ -126,9 +127,9 @@ def plot_check(thing_index, things, header):
     # gt.to_fits(dict_data, 'our_objectDR14_clean.fits')
     thing = gt.thing
     ###### SDSS ######
-    plt.plot(date_spec,i_mag,linewidth=0.5,linestyle='--',c='orange')
-    plt.scatter(date_spec,i_mag,s=10,c='orange',label='Our Object: DR14')
-    plt.errorbar(date_spec,i_mag,i_err,fmt='none',c='orange',linewidth=0.5,capsize=1,ecolor='orange')
+    #plt.plot(date_spec,i_mag,linewidth=0.5,linestyle='--',c='orange')
+    #plt.scatter(date_spec,i_mag,s=10,c='orange',label='Our Object: DR14')
+    #plt.errorbar(date_spec,i_mag,i_err,fmt='none',c='orange',linewidth=0.5,capsize=1,ecolor='orange')
 
     ra_t = thing[:,0]
     dec_t = thing[:,1]
@@ -139,26 +140,44 @@ def plot_check(thing_index, things, header):
     i_t=thing[:,6]
     z_t=thing[:,7]
     err_i_t=thing[:,9]
-   
+    err_u_t=thing[:,10]
+    err_g_t=thing[:,11]
+    err_r_t=thing[:,12]
+    err_z_t=thing[:,13]
     t2=Time(mjd_t,format='mjd')
     d_t=t2.decimalyear
-    d_t,i_t,err_i_t=zip(*sorted(zip(d_t,i_t,err_i_t)))
-    plt.scatter(d_t,i_t,s=10,label='Our Object Stripe 82 at ra={}, dec={}'.format(np.round(ra_t[0],3),np.round(dec_t[0],3)))
-    # plt.plot(d_t,i_t1,linewidth=0.5,linestyle='--')
-    plt.errorbar(d_t,i_t,err_i_t,fmt='none',linewidth=0.5,capsize=2,c='b')
+    d_t,u_t,g_t,r_t,i_t,z_t,err_i_t=zip(*sorted(zip(d_t,u_t,g_t,r_t,i_t,z_t,err_i_t)))
+    
+    # plt.scatter(d_t,u_t,s=10,label='u',c='cyan')
+    # plt.plot(d_t,u_t,linewidth=0.5, linestyle='--', c='cyan')
+    # plt.errorbar(d_t, u_t, err_u_t, c='cyan',linewidth=0.5)
+    
+    plt.scatter(d_t,g_t,s=10,label='g',c='magenta')
+    plt.plot(d_t,g_t,linewidth=0.5, linestyle='--', c='magenta')
+    plt.errorbar(d_t, g_t, err_g_t, c='magenta',linewidth=0.5)
+    
+    plt.scatter(d_t,r_t,s=10,label='r',c='green')
+    plt.plot(d_t,r_t,linewidth=0.5, linestyle='--', c='green')
+    plt.errorbar(d_t, r_t, err_r_t, c='green',linewidth=0.5)
+   
+    plt.scatter(d_t,i_t,s=10,label='i',c='orange')
+    plt.plot(d_t,i_t,linewidth=0.5, linestyle='--', c='orange') 
+    plt.errorbar(d_t, i_t, err_i_t, c='orange',linewidth=0.5)
+
+    plt.scatter(d_t,z_t,s=10,label='z',c='red')
+    plt.plot(d_t,z_t,linewidth=0.5, linestyle='--', c='red')
+    plt.errorbar(d_t, z_t, err_z_t, c='red',linewidth=0.5)
     ###### SDSS ######
    
     plt.legend()
     plt.gca().invert_yaxis()
+    plt.savefig('/Users/admin/Desktop/astro_research/plots/sdss82.png',
+                overwrite=True, dpi=300)
     plt.show()
 
 # Pass in instance of lcTools 
-<<<<<<< HEAD
-def diff_phot(table:lcTool):
-=======
 def diff_phot(table:lcTools):
 
->>>>>>> diffPhot
     things = table.group_things()
     table.show_things(things)
     header = table.header
@@ -167,37 +186,6 @@ def diff_phot(table:lcTools):
     
     [d_things.append(groupedThing(thing,header).dict_data()) for thing in things]
 
-<<<<<<< HEAD
-    for x in d_things:
-        if x['thingID'][0] == 77759292:
-            our_object = x
-
-
-    i_mags = {}
-    errs_i = {}
-    dates = {}
-    
-    for index, x in enumerate(d_things):
-        if len(x['mjd_i']) == len(our_object['mjd_i']) and np.mean(x['modelMag_i']) <= 20.5 and np.mean(x['modelMag_i']) >= 19.5:
-            i_mags[index] = x['modelMag_i']
-            errs_i[index] = x['modelMagErr_i']
-            dates[index] = x['mjd_i']
-    
-    print(i_mags.keys())
-    median = np.median((i_mags[28],i_mags[42],i_mags[52],i_mags[55],i_mags[67],i_mags[68],i_mags[81],i_mags[110],i_mags[115],i_mags[134],i_mags[139],i_mags[140],i_mags[147],i_mags[150],i_mags[163],i_mags[168],i_mags[170],i_mags[195],i_mags[197],i_mags[207],i_mags[208],i_mags[222],i_mags[226],i_mags[228],i_mags[242],i_mags[265],i_mags[267],i_mags[272],i_mags[281],i_mags[286]),axis = 0)
-    plt.figure()
-    # plt.title('Median i-band of 30 sources overplotted on our object\'s light curve')
-    plt.title('NeV i-band - median(30 other souces i-band)')
-    plt.xlabel('MJD')
-    plt.ylabel('Magnitude')
-    plt.scatter(our_object['mjd_i'], our_object['modelMag_i'] - median)
-    plt.plot(our_object['mjd_i'], our_object['modelMag_i'] - median)
-    # plt.scatter(our_object['mjd_i'], our_object['modelMag_i'], label='Our Object')
-    # plt.scatter(our_object['mjd_i'], median, label='Median 30 sources')
-    plt.gca().invert_yaxis()
-    # plt.legend()
-    plt.show()
-=======
     try:
         for x in d_things:
             if x['thingID'][0] == 	77759292:
@@ -321,7 +309,6 @@ def diff_phot(table:lcTools):
 
     
     # median = np.median((i_mags[28],i_mags[42],i_mags[52],i_mags[55],i_mags[67],i_mags[68],i_mags[81],i_mags[110],i_mags[115],i_mags[134],i_mags[139],i_mags[140],i_mags[147],i_mags[150],i_mags[163],i_mags[168],i_mags[170],i_mags[195],i_mags[197],i_mags[207],i_mags[208],i_mags[222],i_mags[226],i_mags[228],i_mags[242],i_mags[265],i_mags[267],i_mags[272],i_mags[286]),axis = 0)
->>>>>>> diffPhot
 
     # put code back
 # Compares changes in photometry
@@ -406,54 +393,61 @@ def return_things(self,things):
     return self.things
 
 
-def plot_show():
-    user_input='y'
-    while user_input=='y':
-        table = lcTool(csv_data_path)
-        try:
-            table.deg_to_arcsec()
-            things = table.group_things()
-            table.show_things(things)
-            choice=input('Which thing?: ')
-            while choice != '':
-                plot_check(choice, things, table.header)
-                choice=input('Which thing?: ')
-            user_input=input('Continue? (y/n): ')
-        except Exception as e:
-            if type(e) is TypeError and table is None:
-                print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
-            else:
-                print('\n' + traceback.format_exc() + '\n')
-                print(type(e))
+# def plot_show():
+#     user_input='y'
+#     while user_input=='y':
+#         table = lcTools(csv_data_path)
+#         try:
+#             table.deg_to_arcsec()
+#             things = table.group_things()
+#             table.show_things(things)
+#             choice=input('Which thing?: ')
+#             while choice != '':
+#                 plot_check(choice, things, table.header)
+#                 choice=input('Which thing?: ')
+#             user_input=input('Continue? (y/n): ')
+#         except Exception as e:
+#             if type(e) is TypeError and table is None:
+#                 print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
+#             else:
+#                 print('\n' + traceback.format_exc() + '\n')
+#                 print(type(e))
                   
-            user_input = input('Continue? (y/n): ')
+#             user_input = input('Continue? (y/n): ')
         
 
-def table_data():
-    user_input = 'y'
-    while user_input == 'y':
-        table = lcTool(csv_data_path)
+# def table_data():
+#     user_input = 'y'
+#     while user_input == 'y':
+#         table = lcTools(csv_data_path)
        
-        try:
-            table.deg_to_arcsec()
+#         try:
+#             table.deg_to_arcsec()
             
-            diff_phot(table)
-            # diff_photometry_dr14(things)
+#             diff_phot(table)
+#             # diff_photometry_dr14(things)
          
-        except Exception as e:
-            print(e)
-            if type(e) is TypeError:
-                print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
-            else:
-                print('\n' + traceback.format_exc() + '\n')
-                print(type(e))
+#         except Exception as e:
+#             print(e)
+#             if type(e) is TypeError:
+#                 print('\nERROR: lc_tools never got a valid .csv file; table was set to None \n')
+#             else:
+#                 print('\n' + traceback.format_exc() + '\n')
+#                 print(type(e))
             
-            user_input = input('Continue? (y/n): ')
+#             user_input = input('Continue? (y/n): ')
 
+
+<<<<<<< HEAD
 <<<<<<< HEAD
 plot_show()
 =======
 
 table_data()
+>>>>>>> diffPhot
+=======
+table = lcTools(csv_data_path)
+
+# plot_show()
 >>>>>>> diffPhot
 # things,table = table_data()
