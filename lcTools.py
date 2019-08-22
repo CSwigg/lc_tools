@@ -35,7 +35,7 @@ class photoTable:
             self.arcsec_switch = True
 
     def arcsec_to_deg(self):
-        if self.arcsec_switch == True
+        if self.arcsec_switch == True:
             self.table[['ra','dec']] = self.table[['ra','dec']] / 3600
             self.arcsec_switch = False
     
@@ -59,142 +59,90 @@ class photoTable:
             print('\nSorting by astrometry variations:\n')
             self.table.deg_to_arcsec()
             gf = self.table.groupby([np.round(self.table['ra'],3), np.round(self.table['dec'],3)])
+            self.table.arcsec_to_deg()
             for x in gf.groups:
                 source = gf.get_group(x)
                 sourceDict[('{:.4f}'.format(round(np.mean(source.ra))), '{:.4f}'.format(round(np.mean(source.dec))))] = source
             return source
    
+    def make_source(self, source_key):
+        gf = self.group_things()
+        return photoSource(gf[source_key])
+
+
     @staticmethod
     def map_table(grouped_table, reference = None):
         plt.figure()
         plt.title('Mapping of Photometric Sources')
         plt.xlabel('RA')
         plt.ylabel('Dec')
-        color = ['blue', 'orange']
-        for g in grouped_table:
-            if g.has
-            plt.scatter(g.ra, g.dec, label = g.thingID.iloc[0], s=7, c=color)
+        # color = [3 : 'blue', 6 : 'orange']
+        for key, value in grouped_table.items():
             try:
-                plt.annotate(g.thingID.iloc[0], (g.ra.iloc[0], g.ra.iloc[0]), horizontalalignment = 'center', verticalalignment='center', size=20, weight='bold')
+                # SELECT p.type from photoObj <-- SDSS CAS
+                plt.scatter(value.ra, value.dec, s=10, c=color[value.type.iloc[0]])
+            except:
+                plt.scatter(value.ra, value.dec, s=10, c='black')
+
+            try:
+                plt.annotate(key, (value.ra.iloc[0], value.ra.iloc[0]), horizontalalignment = 'center', verticalalignment='center', size=20, weight='bold')
                 print('annotating')
             except:
-                plt.annotate((g.ra.iloc[0], g.dec.iloc[0]), (g.ra.iloc[0], g.dec.iloc[0]), horizontalalignment = 'center', verticalalignment='center', size=520, weight='bold')
+                plt.annotate(key, (value.ra.iloc[0], value.dec.iloc[0]), horizontalalignment = 'center', verticalalignment='center', size=20, weight='bold')
         plt.show()
-    # TODO: Fix formating so that columns are aligned: Use format strings, or pandas(?)
+
+    
+
+
+
+
+    
+
+class photoSource():
+    '''
+    Grouped detections of a single galaxy/star. 
+    '''
+    
+    def __init__(self, source):
+        '''
+        Initilize with a dictionary of detections (source); key being some sort of ID string or 
+        a tuple of coordiantes (strings)
+        '''
+        self.source = source
+        self.detection_count = len(self.source.values)
+    
+    # Sorts an array of dates and an array of magnitudes by the numerical order of the date array
+    def sortDetection_by_date(date,mag,err_mag):
+        date, mag, err_mag= zip(*sorted(zip(date,mag,err_mag)))
+        return np.asarray(date), np.asarray(mag), np.asarray(err_mag)
+    
     @staticmethod
-    def show_things(self):
-   
+    def to_fits(name:str):
         '''
-        Run sort_things(table) first!!!
+        Takes in a dictionary of data and outputs to fits file based on key names
+        '''
+        t = Table(dict_data())
+        t.write('/Users/admin/Desktop/astro_research/{}.fits'.format(name))
+
+    def to_fits2(self,date_index:int, mag_index:int, err_mag_index:int, filter_name:str, name:str):
+        '''
+        Takes the date and photometry of one band of a source and writes it to a fits file
         '''
         
-        print('Total things: ', len(things))
-        count=0
-        for i in things:
-            count += len(i)
-        print('Total detections: ', count,'\n')
-       
-        for index, i in enumerate(things):
-            print('THING ' + str(index))
-            print('---------------------------------')
-            for j in i:
-                print('RA:'.rjust(10) + str(round(j[0],4)) + ' DEC:'.rjust(10) + str(round(j[1],4)) + ' MJD:'.rjust(10) + str(round(j[2],2)) + ' u:'.rjust(10) + str(round(j[3],2)) + ' g:'.rjust(10) + str(round(j[4],2)) + ' r:'.rjust(10) + str(round(j[5],2)) +' i:'.rjust(10) + str(round(j[6],2)) + ' z:'.rjust(10) + str(round(j[7],2)))
-            print('\n')
-    
-    def unpack_thing(self,index):
-        stacked_thing=np.stack(self.l_grouped[index],axis=0)
-        return stacked_thing
-        # Creates a dictionary of things 
-   
-    def dict_things(self, things):
-        d = {}
-        d['thing' + str(i)] = [self.unpack_thing(thing) for i, thing in enumerate(things)]
-        return d
-    
-   
+        date = self.thing[:,date_index]
+        mag = self.thing[:,mag_index]
+        err_mag = self.thing[:,err_mag_index]
 
-# class panstarrsTool(lcTool):
+        t = Table()
+        t['Date'] = Column(date)
+        t[filter_name + '-band'] = Column(mag)
+        t[filter_name + '-band Error'] = Column(err_mag)
 
-#     def __init__(self, file_path, indices):
-#         super().__init__(file_path)
-        
-    
-#     def group_things(self) -> np.ndarray:
-        
-#         '''
-#         Groups detections by objID or by astrometry variations 
-#         '''
-       
-#         # For PS files with output objID
-#         try:
-#             df = pd.read_csv(self.file_name)
-#             gf = df.groupby('objID')
-#             grouped = [gf.get_group(x) for x in gf.groups]
-#             [self.l_grouped.append(x.values) for x in grouped]
-#             return self.l_grouped
-#         # Without objID
-#         except KeyError:
-#             print('\nSorting by astrometry variations:\n')
-#             df = pd.read_csv(self.file_name)
-#             gf = df.groupby([np.round(df['ra'],3), np.round(df['dec'],3)])
-#             grouped = [gf.get_group(x) for x in gf.groups]
-#             self.l_grouped = []
-#             [self.l_grouped.append(x.values) for x in grouped]
-#             return self.l_grouped
-    
-
-# class photoSource():
-#     '''
-#     Grouped detections of a single galaxy/star. 
-#     '''
-    
-#     def __init__(self, thing, header):
-#         '''
-#         Initilize with a numpy.ndarray of detections (thing), and a corresponding list of strings
-#         representing the detections' respective value types (header). Header is an attribute
-#         of lcTools; access the header from a lcTools instance. 
-#         '''
-#         # Turns list of numpy arrays into a single numpy array of all detections
-#         self.thing = np.stack(thing, axis = 0)
-#         self.detection_count = len(self.thing)
-#         self.header = np.asarray(header)
-
-#     def dict_data(self):
-#         d = {}
-#         for i in range(len(self.thing[0])):
-#             d[self.header[i]] = self.thing[:,i]
-#         return d
-
-#     # Sorts an array of dates and an array of magnitudes by the numerical order of the date array
-#     def sort_by_date(date,mag,err_mag):
-#         date, mag, err_mag= zip(*sorted(zip(date,mag,err_mag)))
-#         return np.asarray(date), np.asarray(mag), np.asarray(err_mag)
-    
-#     @staticmethod
-#     def to_fits(name:str):
-#         '''
-#         Takes in a dictionary of data and outputs to fits file based on key names
-#         '''
-#         t = Table(dict_data())
-#         t.write('/Users/admin/Desktop/astro_research/{}.fits'.format(name))
-
-#     def to_fits2(self,date_index:int, mag_index:int, err_mag_index:int, filter_name:str, name:str):
-#         '''
-#         Takes the date and photometry of one band of a source and writes it to a fits file
-#         '''
-        
-#         date = self.thing[:,date_index]
-#         mag = self.thing[:,mag_index]
-#         err_mag = self.thing[:,err_mag_index]
-
-#         t = Table()
-#         t['Date'] = Column(date)
-#         t[filter_name + '-band'] = Column(mag)
-#         t[filter_name + '-band Error'] = Column(err_mag)
-
-#         t.write('/Users/admin/Desktop/astro_research/' + name + '.fits')
+        t.write('/Users/admin/Desktop/astro_research/' + name + '.fits')
 
 
 
-
+tbl = photoTable('data_files/DR14_clean.csv')
+gf = tbl.group_things()
+print(gf)
 
