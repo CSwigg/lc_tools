@@ -317,9 +317,11 @@ def diff_photometry_dr14(things):
     Plotting below corresponds to the 'DR14.csv' file. 
     '''
 
+    check = lcTool(things)
+
     dict_things = check.dict_things(things)
     
-    thing0 = dict_things['thing0']
+    thing0 = check.dict_things['thing0']
     d0 = thing0[:,2]
     i0 = thing0[:,6]
     err_i0 = thing0[:,9]
