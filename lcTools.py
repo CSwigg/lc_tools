@@ -112,6 +112,7 @@ class photoSource():
         self.detection_count = len(self.source.values)
     
     # Sorts an array of dates and an array of magnitudes by the numerical order of the date array
+    @staticmethod
     def sortDetection_by_date(date,mag,err_mag):
         date, mag, err_mag= zip(*sorted(zip(date,mag,err_mag)))
         return np.asarray(date), np.asarray(mag), np.asarray(err_mag)
@@ -142,7 +143,7 @@ class photoSource():
 
 
 
-tbl = photoTable('data_files/DR14_clean.csv')
-gf = tbl.group_things()
-print(gf)
+# tbl = photoTable('data_files/DR14_clean.csv')
+# gf = tbl.group_things()
+
 
