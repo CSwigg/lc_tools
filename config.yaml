@@ -1,0 +1,3 @@
+SDSS_urls:
+        S82: 'http://skyserver.sdss.org/stripe82/en/tools/search/sql.asp'
+        DR14: 'https://skyserver.sdss.org/dr14/en/tools/search/sql.aspx'

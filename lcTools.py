@@ -4,40 +4,66 @@ from astropy.table import Table, Column
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
+import yaml
 
-'''
-Light curve tools are meant to take in a csv output file from a CasJobs query
-and assist with quick light curve plots.
-'''
+# IMPORTS FOR SCISERVER SQL RETRIEVAL 
+import mechanize
+from io import StringIO
+from io import BytesIO
 
 
 class photoTable:
-    
-    def __init__(self, file_path, arcsec_switch = False):
+  
+    def __init__(self, file_path, sdss_version, direct_query = False, arcsec_switch = False, sort = False):
+                
         self.file_name = file_path
         self.table=[]
         self.l_grouped = []
         self.arcsec_switch = arcsec_switch
-        # Attribute file_name to use throughtout the instance since file_name has to be set to null at end of __init__
+        self.sort = sort
+        self.direct_query = direct_query
+        self.sdss_version = sdss_version
 
-        while (not os.path.exists(self.file_name)):
-            print('\nWARNING: Table was not initialized.\n')
-            self.file_name = None
-            return 
-           
+        # USE CASE: DATA FILE PASSED IN FROM DIRECTORY
+        if self.direct_query == False:
+            while (not os.path.exists(self.file_name)):
+                print('\nWARNING: Table was not initialized.\n')
+                self.file_name = None
+                return 
 
-        with open(self.file_name) as f: 
-            self.table = pd.read_csv(self.file_name)
+            with open(self.file_name) as f: 
+                self.table = pd.read_csv(self.file_name)
+
+        # USE CASE: DIRECT STRIPE 82 SQL RETRIEVAL 
+        elif self.direct_query == True and self.sdss_version == 'S82':
+            self.table = pd.read_csv(self.file_name, error_bad_lines = False)
+
+        # USE CASE: DIRECT SQL RETRIEVAL FROM ANY OTHER DATA RELEASE
+        elif self.direct_query == True and self.sdss_version != 'S82':
+            self.table = pd.read_csv(self.file_name, skiprows = 1, error_bad_lines = False)
+
+
+        if self.sort == True:
+            self.group_things(make_map = False)
+    
+    @classmethod
+    def sql_retrieve(cls, data_release_url, query, s = False):
+        with open('config.yaml', 'r') as ymlfile:
+            cfg = yaml.safe_load(ymlfile)
+            sdss_urls = cfg['SDSS_urls']
+        version = data_release_url
+        browser = mechanize.Browser()
+        url = sdss_urls[data_release_url]
+
+        resp = browser.open(url)
+        browser.select_form(name="sql")
+        browser['cmd'] = query  
+        browser['format']=['csv'] 
+        response = browser.submit()
+        file_path = BytesIO(response.get_data())
+        return cls(file_path, sdss_version = version, direct_query = True, sort = s)
         
-    def deg_to_arcsec(self):
-        if self.arcsec_switch == False:
-            self.table[['ra','dec']] = self.table[['ra','dec']] * 3600
-            self.arcsec_switch = True
-
-    def arcsec_to_deg(self):
-        if self.arcsec_switch == True:
-            self.table[['ra','dec']] = self.table[['ra','dec']] / 3600
-            self.arcsec_switch = False
+        
     
     def group_things(self, make_map = False):
         
@@ -56,18 +82,28 @@ class photoTable:
             return sourceDict
         # Sorting for stripe82 and databases < DR14
         except KeyError:
+            
             print('\nSorting by astrometry variations:\n')
-            self.table.deg_to_arcsec()
-            gf = self.table.groupby([np.round(self.table['ra'],3), np.round(self.table['dec'],3)])
-            self.table.arcsec_to_deg()
+            
+            gf = self.table.groupby([np.round(self.table['ra']/3600,3), np.round(self.table['dec']/3600,3)])
             for x in gf.groups:
                 source = gf.get_group(x)
-                sourceDict[('{:.4f}'.format(round(np.mean(source.ra))), '{:.4f}'.format(round(np.mean(source.dec))))] = source
-            return source
+                
+
+                try:
+                    sourceDict[('{:.4f}'.format(round(np.mean(source.ra))), '{:.4f}'.format(round(np.mean(source.dec))))] = source
+                except KeyError:
+                    print('Need SQL query to return pair of (ra,dec)')
+                    return
+
+            return sourceDict
    
     def make_source(self, source_key):
-        gf = self.group_things()
+        
+        if self.sort == False:
+            gf = self.group_things()
         return photoSource(gf[source_key])
+        
 
 
     @staticmethod
@@ -91,7 +127,8 @@ class photoTable:
                 plt.annotate(key, (value.ra.iloc[0], value.dec.iloc[0]), horizontalalignment = 'center', verticalalignment='center', size=20, weight='bold')
         plt.show()
 
-    
+        
+  
 
 
 
@@ -142,8 +179,5 @@ class photoSource():
         t.write('/Users/admin/Desktop/astro_research/' + name + '.fits')
 
 
-
-# tbl = photoTable('data_files/DR14_clean.csv')
-# gf = tbl.group_things()
 
 
