@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import astropy.visualization as v
 from astropy.io import fits
 from astropy.time import Time
-from lcTools import lcTool, groupedThing
+from lcTools import photoTable, photoSource
 import os 
 import traceback
 plt.rc('text', usetex=True)
@@ -176,7 +176,7 @@ def plot_check(thing_index, things, header):
     plt.show()
 
 # Pass in instance of lcTools 
-def diff_phot(table:lcTools):
+def diff_phot(table):
 
     things = table.group_things()
     table.show_things(things)
@@ -184,7 +184,7 @@ def diff_phot(table:lcTools):
     # List of dictionaries
     d_things = []
     
-    [d_things.append(groupedThing(thing,header).dict_data()) for thing in things]
+    [d_things.append(photoSource(thing,header).dict_data()) for thing in things]
 
     try:
         for x in d_things:
@@ -440,16 +440,3 @@ def return_things(self,things):
 #             user_input = input('Continue? (y/n): ')
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-plot_show()
-=======
-
-table_data()
->>>>>>> diffPhot
-=======
-table = lcTools(csv_data_path)
-
-# plot_show()
->>>>>>> diffPhot
-# things,table = table_data()
