@@ -3,7 +3,6 @@ SELECT
 FROM 
   photoObj p 
 JOIN field f ON p.fieldid=f.fieldid
-/* JOIN detectionIndex d ON p.objID=d.objID /*
 WHERE 
   f.mjd_i != 0
   /*AND p.psfMag_i - p.cmodelMag_i > 0.145*/

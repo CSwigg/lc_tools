@@ -1,18 +1,27 @@
 import numpy as np
 import os
+import io
 from astropy.table import Table, Column
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
 import yaml
 
-# IMPORTS FOR SCISERVER SQL RETRIEVAL 
+# IMPORTS FOR SDSS WEB-FORUM SQL RETRIEVAL 
 import mechanize
 from io import StringIO
 from io import BytesIO
 
 
+DATA_PATH = '/Users/admin/Desktop/lc_tools/data_files/'
+QUERY_PATH = '/Users/admin/Desktop/lc_tools/queries/'
+
 class photoTable:
+
+    '''
+    Construct instance with either default __init__ (read in .csv file)
+    or with the classmethod sql_retrieve (retrieve data).
+    '''
   
     def __init__(self, file_path, sdss_version, direct_query = False, arcsec_switch = False, sort = False):
                 
@@ -48,16 +57,27 @@ class photoTable:
     
     @classmethod
     def sql_retrieve(cls, data_release_url, query, s = False):
+        
         with open('config.yaml', 'r') as ymlfile:
             cfg = yaml.safe_load(ymlfile)
             sdss_urls = cfg['SDSS_urls']
-        version = data_release_url
-        browser = mechanize.Browser()
-        url = sdss_urls[data_release_url]
 
+        query_file = QUERY_PATH + query
+
+        if os.path.exists(query_file):
+            with open (query_file) as infile:
+                query_txt = infile.read().strip(' ')
+                print(query_txt)
+        else:
+            query_txt = query
+        
+        
+        version = data_release_url
+        browser = mechanize.Browser() # CONSTRUCTION OF MECHANIZE BROWSER INSTANCE
+        url = sdss_urls[data_release_url]
         resp = browser.open(url)
         browser.select_form(name="sql")
-        browser['cmd'] = query  
+        browser['cmd'] = query_txt # SQL QUERY FILE OR TEXT PASSED INTO WEB-FORUM 
         browser['format']=['csv'] 
         response = browser.submit()
         file_path = BytesIO(response.get_data())
@@ -65,7 +85,7 @@ class photoTable:
         
         
     
-    def group_things(self, make_map = False):
+    def group_things(self, make_map = False, show = False):
         
         '''
         Groups detections by thingID or by astrometry variations (if .csv file is from 
@@ -78,7 +98,7 @@ class photoTable:
             gf = self.table.groupby('thingID')
             for x in gf.groups:
                 source = gf.get_group(x)
-                sourceDict[str(source.thingID.iloc[0])] = source
+                sourceDict[source.thingID.iloc[0]] = source
             return sourceDict
         # Sorting for stripe82 and databases < DR14
         except KeyError:
@@ -86,17 +106,23 @@ class photoTable:
             print('\nSorting by astrometry variations:\n')
             
             gf = self.table.groupby([np.round(self.table['ra']/3600,3), np.round(self.table['dec']/3600,3)])
-            for x in gf.groups:
+            for i, x in enumerate(gf.groups):
                 source = gf.get_group(x)
                 
 
                 try:
-                    sourceDict[('{:.4f}'.format(round(np.mean(source.ra))), '{:.4f}'.format(round(np.mean(source.dec))))] = source
+                    sourceDict[i] = source
                 except KeyError:
                     print('Need SQL query to return pair of (ra,dec)')
                     return
 
+            if show == True:
+                for key, source_data in sourceDict.items():
+                    print(source_data)
+
             return sourceDict
+ 
+        
    
     def make_source(self, source_key):
         

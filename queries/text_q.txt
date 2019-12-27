@@ -1,0 +1,10 @@
+SELECT TOP 10                          
+    objID, ra, dec, modelMag_u, modelMag_g  
+FROM                                        
+    PhotoPrimary                            
+WHERE                                      
+    ra BETWEEN 140 and 141                  
+AND dec BETWEEN 20 and 21                   
+AND type = 6                                
+AND clean = 1                             
+AND modelMag_u - modelMag_g < 0.5 

@@ -1,0 +1,28 @@
+SELECT 
+  p.ra,p.dec,f.mjd_i,p.modelMag_u,p.modelMag_g,p.modelMag_r,p.modelMag_i,p.modelMag_z,p.objID,p.modelMagErr_i,d.thingID, f.quality, p.field
+
+FROM 
+  photoObj p 
+JOIN field f ON p.fieldid=f.fieldid
+JOIN detectionIndex d ON p.objID=d.objID
+WHERE 
+  f.mjd_i != 0
+  AND f.quality > 1
+
+  AND p.ra BETWEEN 12.148 AND 12.24857
+  AND p.dec BETWEEN -.82477 AND -.71721
+  AND ((p.flags & 0x10000000) != 0)
+  AND ((p.flags & 0x8100000c00a0) = 0)
+  AND ((p.flags & 0x400000000000) = 0)
+  AND (((p.flags & 0x100000000000) = 0) or (flags_r & 0x1000) = 0)
+  AND ((p.flags & 0x20)) = 0
+  AND (p.flags & 0x80000) = 0
+  AND (((p.flags & 0x400000000000)) = 0 or psfmagerr_r <= 0.2)
+  AND (p.flags & 0x800000000000) = 0 --/ not PSF_FLUX_INTERP
+  AND (flags_r & 0x10000000000) = 0 --/ not BAD_COUNTS_ERROR
+  AND ((flags_r & 0x100000000000) = 0 OR (flags_r & 0x1000) = 0)
+  AND (flags_r & 0x10000000) != 0 --/ BINNED1
+  AND (flags_r & 0x40000) = 0 --/ not SATURATED
+  AND (flags_r & 0x80) = 0 --/ not NOPROFILE
+ORDER BY
+  f.mjd_i
