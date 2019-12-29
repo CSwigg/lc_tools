@@ -13,8 +13,12 @@ from io import StringIO
 from io import BytesIO
 
 
-DATA_PATH = '/Users/admin/Desktop/lc_tools/data_files/'
-QUERY_PATH = '/Users/admin/Desktop/lc_tools/queries/'
+# UNIQUE TO USER
+PATH = '/Users/admin/Desktop/lc_tools/'
+
+DATA_PATH = PATH + 'data_files/'
+QUERY_PATH = PATH + 'queries/'
+config_file = PATH + 'config.yaml'
 
 class photoTable:
 
@@ -58,7 +62,7 @@ class photoTable:
     @classmethod
     def sql_retrieve(cls, data_release_url, query, s = False):
         
-        with open('config.yaml', 'r') as ymlfile:
+        with open(config_file, 'r') as ymlfile:
             cfg = yaml.safe_load(ymlfile)
             sdss_urls = cfg['SDSS_urls']
 
